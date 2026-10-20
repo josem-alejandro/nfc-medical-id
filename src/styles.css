@@ -1468,3 +1468,20 @@ main {
     margin-bottom: 8px;
   }
 }
+.step-mobile-label {
+  display: none;
+}
+@media (max-width: 760px) {
+  .step-button {
+    height: 60px;
+    flex-direction: column;
+    padding: 5px 0;
+    gap: 4px;
+  }
+  .step-mobile-label {
+    display: block;
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 12px;
+  }
+}
