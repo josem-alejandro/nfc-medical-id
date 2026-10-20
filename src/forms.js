@@ -1,6 +1,6 @@
 import { medicalFields, statusLabels } from "./config.js";
 import { escapeHtml as h } from "./model.js";
-import { field, select, textarea } from "./ui.js";
+import { icon, field, select, textarea } from "./ui.js";
 const today = () => new Date().toLocaleDateString("en-CA");
 export function stage(step, draft, errors) {
   if (step === 0)

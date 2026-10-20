@@ -101,3 +101,17 @@ test("borradores de edición no sustituyen la ficha confirmada", () => {
   repo.save(p, 4, true);
   assert.equal(repo.read().publishedProfile.firstName, "Borrador");
 });
+
+import { stage } from "../src/forms.js";
+import { profileContent } from "../src/ui.js";
+test("las cinco etapas se renderizan sin referencias ausentes", () => {
+  let p = demoProfile();
+  for (let i = 0; i < 5; i++) assert.ok(stage(i, p, {}).length > 0);
+});
+test("la ficha renderizada contiene llamadas y excluye afiliación en consulta", () => {
+  let p = demoProfile();
+  let html = profileContent(publicProfile(p));
+  assert.ok(html.includes('href="tel:'));
+  assert.ok(!html.includes("DEMO-001"));
+  assert.ok(!html.includes("TAPEC"));
+});

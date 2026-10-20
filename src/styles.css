@@ -1202,3 +1202,8 @@ main {
     padding-top: 12px;
   }
 }
+@media (max-width: 760px) {
+  .profile-grid {
+    align-items: stretch;
+  }
+}
