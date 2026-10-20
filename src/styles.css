@@ -1392,3 +1392,79 @@ main {
     animation: none !important;
   }
 }
+.steps-panel li {
+  display: block;
+  margin-bottom: 8px;
+}
+.step-button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: inherit;
+  text-align: left;
+  font-size: 13px;
+  font-weight: inherit;
+}
+.step-button:not(:disabled):hover {
+  background: #e3e3e0;
+}
+.step-number {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d5d5d2;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
+}
+.active .step-number {
+  background: #1a1a1a;
+  color: white;
+  border-color: #1a1a1a;
+}
+.complete .step-number {
+  background: #e0e0dd;
+  border-color: transparent;
+  color: #555;
+}
+.step-button:disabled {
+  opacity: 0.5;
+}
+@media (max-width: 760px) {
+  .steps-panel ol {
+    gap: 4px;
+  }
+  .steps-panel li {
+    margin: 0;
+  }
+  .step-button {
+    width: 44px;
+    height: 44px;
+    padding: 7px;
+    justify-content: center;
+    gap: 0;
+  }
+  .step-label {
+    display: none;
+  }
+  .step-number {
+    width: 30px;
+    height: 30px;
+  }
+  .steps-panel li.active {
+    gap: 0;
+  }
+  .steps-panel nav {
+    margin-bottom: 8px;
+  }
+}

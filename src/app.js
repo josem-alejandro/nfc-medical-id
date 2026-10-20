@@ -18,6 +18,9 @@ let draft = saved?.profile || emptyProfile(),
   errors = {},
   review = false;
 if (draft.consentVersion !== config.privacyVersion) draft.consent = false;
+let furthestStep = saved?.publishedProfile
+  ? steps.length - 1
+  : Math.max(step, saved?.furthestStep || 0);
 let storageOk = true;
 const app = document.querySelector("#app");
 function toast(text) {
@@ -29,9 +32,11 @@ function toast(text) {
   );
 }
 function persist(publish = false) {
-  storageOk = repository.save(draft, step, publish);
+  furthestStep = Math.max(furthestStep, step);
+  storageOk = repository.save(draft, step, publish, furthestStep);
   saved = {
     profile: structuredClone(draft),
+    furthestStep,
     step,
     published: publish || !!saved?.publishedProfile,
     publishedProfile: publish
@@ -69,7 +74,7 @@ function render() {
 }
 function form(main) {
   main.className = "registration";
-  main.innerHTML = `<aside class="steps-panel">${saved?.publishedProfile ? `<a class="back-link" href="#/perfil/${h(saved.publishedProfile.id)}">← Volver a mi ficha</a>` : ""}<h1>Registro</h1><ol>${steps.map((s, i) => `<li class="${i === step ? "active" : i < step ? "complete" : ""}" ${i === step ? 'aria-current="step"' : ""}><span>${i < step ? icon("check") : String(i + 1).padStart(2, "0")}</span>${s}</li>`).join("")}</ol><p class="fine" id="save-state">${storageOk ? "Progreso guardado en este navegador" : "No se pudo guardar el progreso"}</p></aside><div class="form-panel"><div class="progress-meta"><span>Paso ${step + 1} de 5</span><span>${Math.round(((step + 1) / 5) * 100)} %</span></div><progress max="5" value="${step + 1}" aria-label="Progreso del registro"></progress><div class="form-heading"><h2>${review ? "Revisa tu ficha" : steps[step]}</h2><p>${review ? "Comprueba la información antes de guardarla." : ""}</p></div><form novalidate>${review ? `<div class="review">${profileContent(draft, { owner: true, review: true })}</div>${consentMarkup(draft.consent)}<p class="error" id="consent-error">${h(errors.consent || "")}</p>` : stage(step, draft, errors)}<div class="form-actions"><button class="secondary" type="button" id="back" ${step === 0 && !review ? "disabled" : ""}>Atrás</button><button class="primary" type="submit">${review ? "Guardar ficha" : step === 4 ? "Revisar información" : "Continuar"} ${icon(review ? "check" : "arrow")}</button></div></form></div>`;
+  main.innerHTML = `<aside class="steps-panel">${saved?.publishedProfile ? `<a class="back-link" href="#/perfil/${h(saved.publishedProfile.id)}">← Volver a mi ficha</a>` : ""}<h1>Registro</h1><nav aria-label="Pasos del registro"><ol>${steps.map((s, i) => `<li class="${i === step ? "active" : i < furthestStep ? "complete" : ""}"><button type="button" class="step-button" data-step="${i}" aria-label="Paso ${i + 1}: ${h(s)}" ${i === step ? 'aria-current="step"' : ""} ${i > furthestStep ? "disabled" : ""}><span class="step-number">${i < furthestStep && i !== step ? icon("check") : String(i + 1).padStart(2, "0")}</span><span class="step-label">${h(s)}</span></button></li>`).join("")}</ol></nav><p class="fine" id="save-state">${storageOk ? "Progreso guardado en este navegador" : "No se pudo guardar el progreso"}</p></aside><div class="form-panel"><div class="progress-meta"><span>Paso ${step + 1} de 5</span><span>${Math.round(((step + 1) / 5) * 100)} %</span></div><progress max="5" value="${step + 1}" aria-label="Progreso del registro"></progress><div class="form-heading"><h2>${review ? "Revisa tu ficha" : steps[step]}</h2><p>${review ? "Comprueba la información antes de guardarla." : ""}</p></div><form novalidate>${review ? `<div class="review">${profileContent(draft, { owner: true, review: true })}</div>${consentMarkup(draft.consent)}<p class="error" id="consent-error">${h(errors.consent || "")}</p>` : stage(step, draft, errors)}<div class="form-actions"><button class="secondary" type="button" id="back" ${step === 0 && !review ? "disabled" : ""}>Atrás</button><button class="primary" type="submit">${review ? "Guardar ficha" : step === 4 ? "Revisar información" : "Continuar"} ${icon(review ? "check" : "arrow")}</button></div></form></div>`;
 }
 function profile(main, id) {
   let p =
@@ -119,6 +124,27 @@ function bind() {
     e.preventDefault();
     document.querySelector("#main").focus();
   });
+  app.querySelectorAll("[data-step]").forEach((button) =>
+    button.addEventListener("click", () => {
+      const target = Number(button.dataset.step);
+      if (
+        !Number.isInteger(target) ||
+        target < 0 ||
+        target > furthestStep ||
+        target >= steps.length
+      )
+        return;
+      step = target;
+      review = false;
+      errors = {};
+      persist();
+      render();
+      const heading = document.querySelector(".form-heading h2");
+      heading?.setAttribute("tabindex", "-1");
+      heading?.focus({ preventScroll: true });
+      window.scrollTo({ top: 0 });
+    }),
+  );
   let f = app.querySelector("form");
   if (f) {
     f.addEventListener("input", (e) => {

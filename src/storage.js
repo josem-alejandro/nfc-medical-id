@@ -20,7 +20,7 @@ export class DemoRepository {
       return null;
     }
   }
-  save(profile, step = 0, published = false) {
+  save(profile, step = 0, published = false, furthestStep = step) {
     try {
       this.storage.setItem(
         config.storageKey,
@@ -28,6 +28,11 @@ export class DemoRepository {
           version: 1,
           profile,
           step,
+          furthestStep: Math.max(
+            step,
+            furthestStep,
+            this.read()?.furthestStep || 0,
+          ),
           published: published || !!this.read()?.publishedProfile,
           publishedProfile: published
             ? profile

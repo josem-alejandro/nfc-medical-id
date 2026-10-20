@@ -70,7 +70,7 @@ La pulsera almacena únicamente una URL HTTPS de consulta. No se necesita Web NF
 
 ## Verificación
 
-Diecinueve pruebas automatizadas: renderizado de las cinco etapas y de la ficha, edad en límites del cumpleaños, identificadores, campos obligatorios, estados médicos, teléfonos, seguro opcional, datos privados, persistencia, errores y escape de entradas. Consultar `QA.md` para el alcance de la revisión manual y las limitaciones pendientes. No ejecutar llamadas reales durante las pruebas.
+Veinte pruebas automatizadas: renderizado de las cinco etapas y de la ficha, edad en límites del cumpleaños, identificadores, campos obligatorios, estados médicos, teléfonos, seguro opcional, datos privados, persistencia, errores y escape de entradas. Consultar `QA.md` para el alcance de la revisión manual y las limitaciones pendientes. No ejecutar llamadas reales durante las pruebas.
 
 ## Formulario y privacidad del prototipo
 
@@ -81,3 +81,5 @@ Los contactos y el teléfono de asistencia tienen Ecuador (+593) preseleccionado
 La casilla de aceptación está desmarcada inicialmente y enlaza a `#/privacidad`; volver conserva el formulario. Los consentimientos de la versión anterior no sirven para aceptar el aviso nuevo. Al guardar se registra localmente la versión y fecha de la aceptación de ejemplo. Esto no es un registro probatorio de servidor ni autoriza tratar información médica real.
 
 El aviso distingue almacenamiento local, alojamiento técnico y consulta mediante enlace NFC. Los datos legales de TAPEC se marcan «(ejemplo)» por petición del usuario. La cabecera muestra solo «Demo». Antes de un servicio real deben completarse los datos del responsable, habilitarse los mecanismos descritos y revisarse el tratamiento con asesoría competente; el documento no exonera responsabilidades.
+
+Los indicadores de paso son botones: permiten volver directamente a cualquier etapa visitada y regresar después a otra ya abierta. El avance máximo se conserva al retroceder y recargar. No se valida ni bloquea una vuelta a un paso anterior; el guardado final sigue verificando los campos obligatorios. En móvil los cinco botones tienen un área táctil mínima de 44 × 44 px.

@@ -168,3 +168,19 @@ test("aviso se identifica como ejemplo y no cambia datos del formulario", () => 
   assert.ok(privacyPage().includes("#/registro"));
   assert.equal(JSON.stringify(p), before);
 });
+
+test("retroceder y recargar conserva los pasos ya visitados y todos los datos", () => {
+  let value = null;
+  const storage = { getItem: () => value, setItem: (_, v) => (value = v) };
+  let repo = new DemoRepository(storage);
+  let p = demoProfile();
+  repo.save(p, 4, false, 4);
+  p.firstName = "Nombre editado";
+  repo.save(p, 0, false, 4);
+  repo = new DemoRepository(storage);
+  assert.equal(repo.read().step, 0);
+  assert.equal(repo.read().furthestStep, 4);
+  assert.equal(repo.read().profile.firstName, "Nombre editado");
+  assert.equal(repo.read().profile.contacts[0].name, p.contacts[0].name);
+  assert.deepEqual(repo.read().profile.medical, p.medical);
+});
