@@ -36,6 +36,8 @@ Se eligen módulos JavaScript ES nativos y CSS moderno: esta demo estática no n
 - `#/perfil/<UUID>`: ficha de prueba guardada en este navegador.
 - `#/perfil/<UUID>/consulta`: proyección de consulta, sin afiliación.
 
+La compilación añade una versión derivada del contenido a CSS y a todos los módulos JavaScript para evitar mezclar recursos de despliegues distintos en caché.
+
 Las rutas hash y recursos relativos permiten acceso directo y actualización bajo `/nfc-medical-id/` en GitHub Pages sin una configuración de reescrituras. No hay datos personales en los identificadores. Los UUID se generan con `crypto.randomUUID()`.
 
 ## Publicar en GitHub Pages
@@ -46,7 +48,7 @@ Las rutas hash y recursos relativos permiten acceso directo y actualización baj
 4. Ejecutar el flujo `Validate and deploy Pages`. Las pruebas preceden al build y despliegue.
 5. Verificar la URL que devuelve el flujo y abrir directamente la ruta de demostración, incluida una recarga.
 
-URL prevista, pendiente de creación y verificación: `https://josem-alejandro.github.io/nfc-medical-id/`.
+URL publicada en GitHub Pages: `https://josem-alejandro.github.io/nfc-medical-id/`.
 
 ## Límites y datos sensibles
 
@@ -66,4 +68,4 @@ La pulsera almacena únicamente una URL HTTPS de consulta. No se necesita Web NF
 
 ## Verificación
 
-Pruebas automatizadas: edad en límites del cumpleaños, identificadores, campos obligatorios, estados médicos, teléfonos, seguro opcional, datos privados, persistencia, errores y escape de entradas. Consultar `QA.md` para el alcance de la revisión manual y las limitaciones pendientes. No ejecutar llamadas reales durante las pruebas.
+Trece pruebas automatizadas: renderizado de las cinco etapas y de la ficha, edad en límites del cumpleaños, identificadores, campos obligatorios, estados médicos, teléfonos, seguro opcional, datos privados, persistencia, errores y escape de entradas. Consultar `QA.md` para el alcance de la revisión manual y las limitaciones pendientes. No ejecutar llamadas reales durante las pruebas.

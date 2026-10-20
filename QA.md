@@ -4,7 +4,7 @@ Fecha: 20 de octubre de 2026.
 
 ## Comprobado
 
-- Once pruebas automáticas de modelo, validación, teléfonos, proyección de consulta, persistencia y borrador separado de la ficha confirmada.
+- Trece pruebas automáticas de modelo, validación, teléfonos, proyección de consulta, persistencia y borrador separado de la ficha confirmada.
 - Compilación de producción con validación de sintaxis de todos los módulos fuente.
 - Recorrido manual completo en navegador: cinco etapas, campos obligatorios, selección de sangre, dos alergias, dos contactos, seguro omitido, notas, revisión, consentimiento y ficha generada.
 - Coincidencia de nombre, fecha, edad, sangre, alergias, estados desconocido/no presenta, contactos y notas entre registro y ficha.
@@ -25,4 +25,11 @@ No se ha integrado un backend ni etiquetas NFC físicas. La ficha ficticia fija 
 
 ## Publicación
 
-El resultado del despliegue público y la última revisión de consola se documentarán al finalizar la publicación en GitHub Pages.
+Repositorio nuevo: https://github.com/josem-alejandro/nfc-medical-id
+
+Aplicación: https://josem-alejandro.github.io/nfc-medical-id/
+
+GitHub Pages configurado mediante GitHub Actions. Respuesta HTTP 200 verificada. Las pruebas y la compilación se ejecutan antes de cada despliegue. Los recursos de producción incluyen una versión derivada del contenido para evitar mezclas de módulos en caché.
+
+Se retiraron la marca TAPEC, la portada, la tarjeta «Explora una ficha», el pie de página y los textos auxiliares de la ficha a petición del usuario. La entrada abre directamente registro o la ficha confirmada de este navegador. Se conserva un solo aviso breve de demostración con datos ficticios.
+
