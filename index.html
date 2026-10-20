@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#EEEEED" />
+    <meta
+      name="description"
+      content="TAPEC · Demostración de identificación médica NFC. Solo información ficticia."
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'"
+    />
+    <title>TAPEC · Identificación médica</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./src/styles.css" />
+    <script type="module" src="./src/app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Saltar al contenido</a>
+    <div id="app"></div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <noscript
+      >Activa JavaScript para consultar la demostración y completar el
+      formulario.</noscript
+    >
+  </body>
+</html>
