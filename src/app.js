@@ -1,3 +1,4 @@
+import { privacyPage, consentMarkup } from "./privacy.js";
 import { stage } from "./forms.js";
 import { config, steps } from "./config.js";
 import {
@@ -6,6 +7,7 @@ import {
   validate,
   escapeHtml as h,
   publicProfile,
+  validateConsent,
 } from "./model.js";
 import { DemoRepository } from "./storage.js";
 import { icon, profileContent } from "./ui.js";
@@ -15,6 +17,7 @@ let draft = saved?.profile || emptyProfile(),
   step = saved?.step || 0,
   errors = {},
   review = false;
+if (draft.consentVersion !== config.privacyVersion) draft.consent = false;
 let storageOk = true;
 const app = document.querySelector("#app");
 function toast(text) {
@@ -42,7 +45,7 @@ function persist(publish = false) {
       : "No se pudo guardar: conserva esta pestaña abierta";
 }
 function header() {
-  return `<header class="header"><span class="app-title">Identificación médica</span><span class="demo-pill">Demo · Solo datos ficticios</span></header>`;
+  return `<header class="header"><span class="app-title">Identificación médica</span><span class="demo-pill">Demo</span></header>`;
 }
 function go(url) {
   location.hash = url;
@@ -51,7 +54,10 @@ function render() {
   let route = location.hash.slice(1) || "/";
   app.innerHTML = header() + `<main id="main" tabindex="-1"></main>`;
   let main = document.querySelector("#main");
-  if (route === "/registro") {
+  if (route === "/privacidad") {
+    main.className = "privacy-page";
+    main.innerHTML = privacyPage();
+  } else if (route === "/registro") {
     form(main);
   } else if (route.startsWith("/perfil/")) {
     profile(main, route.split("/")[2]);
@@ -63,7 +69,7 @@ function render() {
 }
 function form(main) {
   main.className = "registration";
-  main.innerHTML = `<aside class="steps-panel">${saved?.publishedProfile ? `<a class="back-link" href="#/perfil/${h(saved.publishedProfile.id)}">← Volver a mi ficha</a>` : ""}<h1>Registro</h1><ol>${steps.map((s, i) => `<li class="${i === step ? "active" : i < step ? "complete" : ""}" ${i === step ? 'aria-current="step"' : ""}><span>${i < step ? icon("check") : String(i + 1).padStart(2, "0")}</span>${s}</li>`).join("")}</ol><p class="fine" id="save-state">${storageOk ? "Progreso guardado en este navegador" : "No se pudo guardar el progreso"}</p></aside><div class="form-panel"><div class="progress-meta"><span>Paso ${step + 1} de 5</span><span>${Math.round(((step + 1) / 5) * 100)} %</span></div><progress max="5" value="${step + 1}" aria-label="Progreso del registro"></progress><div class="form-heading"><h2>${review ? "Revisa tu ficha" : steps[step]}</h2><p>${review ? "Comprueba la información antes de guardarla." : ""}</p></div><form novalidate>${review ? `<div class="review">${profileContent(draft, { owner: true, review: true })}</div><label class="consent"><input name="consent" type="checkbox" ${draft.consent ? "checked" : ""} required> Confirmo que son datos ficticios y que deseo mostrarlos en la ficha de prueba.</label><p class="error" id="consent-error">${h(errors.consent || "")}</p>` : stage(step, draft, errors)}<div class="form-actions"><button class="secondary" type="button" id="back" ${step === 0 && !review ? "disabled" : ""}>Atrás</button><button class="primary" type="submit">${review ? "Guardar ficha" : step === 4 ? "Revisar información" : "Continuar"} ${icon(review ? "check" : "arrow")}</button></div></form></div>`;
+  main.innerHTML = `<aside class="steps-panel">${saved?.publishedProfile ? `<a class="back-link" href="#/perfil/${h(saved.publishedProfile.id)}">← Volver a mi ficha</a>` : ""}<h1>Registro</h1><ol>${steps.map((s, i) => `<li class="${i === step ? "active" : i < step ? "complete" : ""}" ${i === step ? 'aria-current="step"' : ""}><span>${i < step ? icon("check") : String(i + 1).padStart(2, "0")}</span>${s}</li>`).join("")}</ol><p class="fine" id="save-state">${storageOk ? "Progreso guardado en este navegador" : "No se pudo guardar el progreso"}</p></aside><div class="form-panel"><div class="progress-meta"><span>Paso ${step + 1} de 5</span><span>${Math.round(((step + 1) / 5) * 100)} %</span></div><progress max="5" value="${step + 1}" aria-label="Progreso del registro"></progress><div class="form-heading"><h2>${review ? "Revisa tu ficha" : steps[step]}</h2><p>${review ? "Comprueba la información antes de guardarla." : ""}</p></div><form novalidate>${review ? `<div class="review">${profileContent(draft, { owner: true, review: true })}</div>${consentMarkup(draft.consent)}<p class="error" id="consent-error">${h(errors.consent || "")}</p>` : stage(step, draft, errors)}<div class="form-actions"><button class="secondary" type="button" id="back" ${step === 0 && !review ? "disabled" : ""}>Atrás</button><button class="primary" type="submit">${review ? "Guardar ficha" : step === 4 ? "Revisar información" : "Continuar"} ${icon(review ? "check" : "arrow")}</button></div></form></div>`;
 }
 function profile(main, id) {
   let p =
@@ -82,6 +88,12 @@ function profile(main, id) {
   main.innerHTML = `${owner ? `<div class="profile-toolbar"><button type="button" class="text-link" id="edit">${icon("edit")} Editar información</button></div>` : ""}${profileContent(publicData, { owner })}<div class="emergency-bar"><a class="emergency" href="tel:${h(config.emergencyNumber)}">${icon("phone")} LLAMAR A EMERGENCIAS</a></div>`;
 }
 function update(name, value) {
+  if (name === "consent") {
+    draft.consent = value;
+    draft.consentVersion = value ? config.privacyVersion : null;
+    if (!value) draft.consentRecord = null;
+    return false;
+  }
   if (name.startsWith("medical-")) {
     let k = name.slice(8);
     draft.medical[k].status = value;
@@ -98,6 +110,7 @@ function update(name, value) {
   } else if (["company", "plan", "member"].includes(name))
     draft.insurance[name] = value;
   else if (name === "insurancePhone") draft.insurance.phone = value;
+  else if (name === "insurancePrefix") draft.insurance.prefix = value;
   else draft[name] = value;
   return false;
 }
@@ -143,13 +156,20 @@ function bind() {
             return;
           }
         }
-        if (!draft.consent) {
-          errors.consent = "Confirma el uso exclusivo de datos ficticios.";
+        if (!validateConsent(draft)) {
+          errors.consent =
+            "Lee el aviso y marca la casilla de aceptación para guardar esta ficha de ejemplo.";
           render();
           document.querySelector('[name="consent"]').focus();
           return;
         }
         draft.updatedAt = new Date().toISOString();
+        draft.consentRecord = {
+          version: config.privacyVersion,
+          acceptedAt: draft.updatedAt,
+          mode: "demo",
+          purpose: "nfc-medical-id",
+        };
         persist(true);
         review = false;
         go("/perfil/" + draft.id);
@@ -216,7 +236,16 @@ function focusError() {
       ?.scrollIntoView({ block: "center" });
 }
 window.addEventListener("hashchange", () => {
-  render();
-  window.scrollTo({ top: 0 });
+  const update = () => {
+    render();
+    window.scrollTo({ top: 0 });
+    document.querySelector("#main").focus({ preventScroll: true });
+  };
+  if (
+    document.startViewTransition &&
+    !matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    document.startViewTransition(update);
+  } else update();
 });
 render();

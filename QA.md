@@ -4,7 +4,7 @@ Fecha: 20 de octubre de 2026.
 
 ## Comprobado
 
-- Trece pruebas automáticas de modelo, validación, teléfonos, proyección de consulta, persistencia y borrador separado de la ficha confirmada.
+- Diecinueve pruebas automáticas de modelo, validación, teléfonos, proyección de consulta, persistencia y borrador separado de la ficha confirmada.
 - Compilación de producción con validación de sintaxis de todos los módulos fuente.
 - Recorrido manual completo en navegador: cinco etapas, campos obligatorios, selección de sangre, dos alergias, dos contactos, seguro omitido, notas, revisión, consentimiento y ficha generada.
 - Coincidencia de nombre, fecha, edad, sangre, alergias, estados desconocido/no presenta, contactos y notas entre registro y ficha.
@@ -33,3 +33,7 @@ GitHub Pages configurado mediante GitHub Actions. Respuesta HTTP 200 verificada.
 
 Se retiraron la marca TAPEC, la portada, la tarjeta «Explora una ficha», el pie de página y los textos auxiliares de la ficha a petición del usuario. La entrada abre directamente registro o la ficha confirmada de este navegador. Se conserva un solo aviso breve de demostración con datos ficticios.
 
+
+## Actualización de facilidad de registro y privacidad
+
+Se añadieron validaciones del Código Banner de ocho dígitos, teléfono internacional pegado, seguro parcialmente completado, aceptación por versión y exclusión de Banner de la consulta. Se incorporó `#/privacidad` con datos de TAPEC de ejemplo y referencias oficiales. La cabecera conserva solo «Demo». La revisión no constituye una certificación de cumplimiento legal.

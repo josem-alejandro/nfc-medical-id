@@ -24,6 +24,7 @@ Se eligen módulos JavaScript ES nativos y CSS moderno: esta demo estática no n
 - `src/storage.js`: adaptador `DemoRepository`, sustituible por una API autenticada.
 - `src/ui.js`: campos, iconos y representación de la ficha.
 - `src/forms.js`: contenido y campos de las cinco etapas.
+- `src/privacy.js`: aceptación versionada y aviso de privacidad de ejemplo.
 - `src/app.js`: rutas hash, registro, edición, revisión y guardado.
 - `src/styles.css`: variables, superficies, responsive, foco y movimiento reducido.
 - `tests/`: pruebas de validación, datos, persistencia y exclusión de información privada.
@@ -32,6 +33,7 @@ Se eligen módulos JavaScript ES nativos y CSS moderno: esta demo estática no n
 
 - `#/`: registro directo o ficha confirmada de este navegador.
 - `#/registro`: registro o borrador.
+- `#/privacidad`: aviso de privacidad de TAPEC con datos legales de ejemplo.
 - `#/perfil/7d83b3c0-2a54-468c-9f21-03ce714fd028`: demostración ficticia disponible en cualquier dispositivo.
 - `#/perfil/<UUID>`: ficha de prueba guardada en este navegador.
 - `#/perfil/<UUID>/consulta`: proyección de consulta, sin afiliación.
@@ -68,4 +70,14 @@ La pulsera almacena únicamente una URL HTTPS de consulta. No se necesita Web NF
 
 ## Verificación
 
-Trece pruebas automatizadas: renderizado de las cinco etapas y de la ficha, edad en límites del cumpleaños, identificadores, campos obligatorios, estados médicos, teléfonos, seguro opcional, datos privados, persistencia, errores y escape de entradas. Consultar `QA.md` para el alcance de la revisión manual y las limitaciones pendientes. No ejecutar llamadas reales durante las pruebas.
+Diecinueve pruebas automatizadas: renderizado de las cinco etapas y de la ficha, edad en límites del cumpleaños, identificadores, campos obligatorios, estados médicos, teléfonos, seguro opcional, datos privados, persistencia, errores y escape de entradas. Consultar `QA.md` para el alcance de la revisión manual y las limitaciones pendientes. No ejecutar llamadas reales durante las pruebas.
+
+## Formulario y privacidad del prototipo
+
+El Código Banner USFQ es un texto de exactamente ocho dígitos; conserva ceros iniciales y no se expone en la consulta pública. No se verifica contra sistemas de USFQ ni se afirma una relación institucional. Los códigos de pulsera anteriores no se reinterpretan como códigos Banner.
+
+Los contactos y el teléfono de asistencia tienen Ecuador (+593) preseleccionado. También se pueden pegar números internacionales completos sin duplicar el prefijo. Todos los datos de seguro son independientes y opcionales, incluida aseguradora, plan, afiliación y teléfono.
+
+La casilla de aceptación está desmarcada inicialmente y enlaza a `#/privacidad`; volver conserva el formulario. Los consentimientos de la versión anterior no sirven para aceptar el aviso nuevo. Al guardar se registra localmente la versión y fecha de la aceptación de ejemplo. Esto no es un registro probatorio de servidor ni autoriza tratar información médica real.
+
+El aviso distingue almacenamiento local, alojamiento técnico y consulta mediante enlace NFC. Los datos legales de TAPEC se marcan «(ejemplo)» por petición del usuario. La cabecera muestra solo «Demo». Antes de un servicio real deben completarse los datos del responsable, habilitarse los mecanismos descritos y revisarse el tratamiento con asesoría competente; el documento no exonera responsabilidades.

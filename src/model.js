@@ -7,7 +7,7 @@ export function emptyProfile() {
     birthDate: "",
     sex: "",
     blood: "Desconocido",
-    band: "",
+    banner: "",
     medical: Object.fromEntries(
       ["conditions", "allergies", "medications", "instructions", "devices"].map(
         (k) => [k, { status: "unknown", items: [] }],
@@ -17,12 +17,14 @@ export function emptyProfile() {
       { name: "", relation: "", prefix: "+593", phone: "" },
       { name: "", relation: "", prefix: "+593", phone: "" },
     ],
-    insurance: { company: "", plan: "", member: "", phone: "" },
+    insurance: { company: "", plan: "", member: "", prefix: "+593", phone: "" },
     notes: "",
     extra: "",
     observations: "",
     language: "Español",
     consent: false,
+    consentVersion: null,
+    consentRecord: null,
     updatedAt: null,
   };
 }
@@ -31,6 +33,7 @@ export function demoProfile() {
   return {
     ...p,
     id: config.demoId,
+    banner: "00000000",
     firstName: "Elena",
     lastName: "Martínez",
     birthDate: "1992-04-18",
@@ -84,8 +87,10 @@ export function age(date, now = new Date()) {
 }
 export function normalizePhone(prefix, phone) {
   let local = phone.replace(/[\s().-]/g, "");
-  if (prefix === "+593") local = local.replace(/^0/, "");
-  return prefix.replace(/\s/g, "") + local;
+  if (local.startsWith("+")) return local;
+  const country = (prefix || config.defaultPrefix).replace(/\s/g, "");
+  if (country === "+593") local = local.replace(/^0/, "");
+  return country + local;
 }
 export function validPhone(value) {
   return /^\+[1-9]\d{6,14}$/.test(value);
@@ -95,6 +100,8 @@ export function validate(p, step) {
   if (step === 0) {
     if (!p.firstName.trim()) e.firstName = "Escribe los nombres.";
     if (!p.lastName.trim()) e.lastName = "Escribe los apellidos.";
+    if (!/^\d{8}$/.test(p.banner || ""))
+      e.banner = "El Código Banner USFQ debe tener exactamente 8 dígitos.";
     let a = age(p.birthDate);
     if (
       !/^\d{4}-\d{2}-\d{2}$/.test(p.birthDate) ||
@@ -119,18 +126,13 @@ export function validate(p, step) {
         e[`contact-${i}-phone`] =
           "Usa un prefijo internacional y un número válido (7–15 dígitos en total).";
     });
-  if (step === 3) {
-    if (
-      Object.values(p.insurance).some((x) => x.trim()) &&
-      !p.insurance.company.trim()
-    )
-      e.company = "Indica la aseguradora o deja la sección vacía.";
-    if (
-      p.insurance.phone &&
-      !validPhone(p.insurance.phone.replace(/[\s()-]/g, ""))
-    )
-      e.insurancePhone =
-        "Usa formato internacional, por ejemplo +593 seguido del número.";
+  if (
+    step === 3 &&
+    p.insurance.phone.trim() &&
+    !validPhone(normalizePhone(p.insurance.prefix, p.insurance.phone))
+  ) {
+    e.insurancePhone =
+      "Revisa el número de asistencia. El código de país ya está seleccionado.";
   }
   return e;
 }
@@ -165,7 +167,9 @@ export function publicProfile(p) {
     insurance: {
       company: p.insurance.company,
       plan: p.insurance.plan,
-      phone: p.insurance.phone,
+      phone: p.insurance.phone
+        ? normalizePhone(p.insurance.prefix, p.insurance.phone)
+        : "",
     },
   };
 }
@@ -177,4 +181,8 @@ export function escapeHtml(v) {
         c
       ],
   );
+}
+
+export function validateConsent(p) {
+  return p.consent === true && p.consentVersion === config.privacyVersion;
 }

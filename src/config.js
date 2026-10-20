@@ -1,4 +1,5 @@
 export const config = Object.freeze({
+  privacyVersion: "2026-10-20-demo-1",
   emergencyNumber: "911",
   defaultPrefix: "+593",
   storageKey: "tapec.demo.v1",

@@ -23,8 +23,11 @@ export function field(label, name, value = "", opts = {}) {
     placeholder = "",
     max = "",
     autocomplete = "off",
+    maxlength = 180,
+    inputmode = "",
+    pattern = "",
   } = opts;
-  return `<div class="field"><label for="${name}">${h(label)}${required ? ' <span aria-hidden="true">*</span>' : ""}</label><input id="${name}" name="${name}" type="${type}" value="${h(value)}" ${required ? "required" : ""} ${max ? `max="${max}"` : ""} maxlength="180" autocomplete="${autocomplete}" ${type === "tel" ? 'inputmode="tel"' : ""} placeholder="${h(placeholder)}" ${error ? `aria-invalid="true" aria-describedby="${name}-error"` : ""}><span class="error" id="${name}-error">${h(error)}</span></div>`;
+  return `<div class="field"><label for="${name}">${h(label)}${required ? ' <span aria-hidden="true">*</span>' : ""}</label><input id="${name}" name="${name}" type="${type}" value="${h(value)}" ${required ? "required" : ""} ${max ? `max="${max}"` : ""} maxlength="${maxlength}" ${pattern ? `pattern="${h(pattern)}"` : ""} autocomplete="${autocomplete}" ${inputmode || type === "tel" ? `inputmode="${inputmode || "tel"}"` : ""} placeholder="${h(placeholder)}" ${error ? `aria-invalid="true" aria-describedby="${name}-error"` : ""}><span class="error" id="${name}-error">${h(error)}</span></div>`;
 }
 export function select(label, name, value, options) {
   return `<div class="field"><label for="${name}">${h(label)}</label><select id="${name}" name="${name}">${options
@@ -33,6 +36,63 @@ export function select(label, name, value, options) {
       return `<option value="${h(v)}" ${v === value ? "selected" : ""}>${h(l)}</option>`;
     })
     .join("")}</select></div>`;
+}
+export function phoneFields(
+  label,
+  name,
+  value,
+  prefixName,
+  prefix,
+  error = "",
+  required = false,
+) {
+  const country = prefix || config.defaultPrefix;
+  const countries = [
+    ["+593", "Ecuador +593"],
+    ["+57", "Colombia +57"],
+    ["+51", "Perú +51"],
+    ["+1", "EE. UU. / Canadá +1"],
+    ["+34", "España +34"],
+    ["+54", "Argentina +54"],
+    ["+56", "Chile +56"],
+    ["+52", "México +52"],
+    ["+58", "Venezuela +58"],
+    ["+55", "Brasil +55"],
+    ["+598", "Uruguay +598"],
+    ["+591", "Bolivia +591"],
+    ["+595", "Paraguay +595"],
+    ["+507", "Panamá +507"],
+    ["+506", "Costa Rica +506"],
+    ["+502", "Guatemala +502"],
+    ["+503", "El Salvador +503"],
+    ["+504", "Honduras +504"],
+    ["+505", "Nicaragua +505"],
+    ["+44", "Reino Unido +44"],
+    ["+49", "Alemania +49"],
+    ["+33", "Francia +33"],
+    ["+39", "Italia +39"],
+    ["+61", "Australia +61"],
+    ["+81", "Japón +81"],
+    ["+86", "China +86"],
+    ["+91", "India +91"],
+  ];
+  if (!countries.some(([code]) => code === country))
+    countries.push([country, country]);
+  return `<div class="phone-fields">${select("Código de país", prefixName, country, countries)}${field(label, name, value, { type: "tel", required, error, placeholder: "099 123 4567" })}</div>`;
+}
+export function insuranceContent(p, owner = false) {
+  const ins = p.insurance;
+  const parts = [
+    ins.company ? `<h3>${h(ins.company)}</h3>` : "",
+    ins.plan ? `<p>${h(ins.plan)}</p>` : "",
+    owner && ins.member
+      ? `<p class="private">Afiliación · ${h(ins.member)}</p>`
+      : "",
+    ins.phone
+      ? `<a class="text-link" href="tel:${h(normalizePhone(ins.prefix, ins.phone))}">${icon("phone")} Llamar a asistencia</a>`
+      : "",
+  ].filter(Boolean);
+  return parts.join("") || '<p class="muted">No proporcionado</p>';
 }
 export function textarea(label, name, value) {
   return `<div class="field"><label for="${name}">${h(label)}</label><textarea id="${name}" name="${name}" rows="3" maxlength="2000">${h(value)}</textarea></div>`;
@@ -54,7 +114,7 @@ export function profileContent(p, { owner = false, review = false } = {}) {
     })
     .join(
       "",
-    )}</section><section class="card"><div class="section-title">${icon("phone")}<h2>Contactos de emergencia</h2></div>${p.contacts.map((c, i) => `<div class="contact"><div><small>${h(c.relation)} · ${i === 0 ? "Principal" : "Alternativo"}</small><h3>${h(c.name)}</h3><a class="number" href="tel:${h(normalizePhone(c.prefix, c.phone))}">${h(normalizePhone(c.prefix, c.phone))}</a></div><a class="call" href="tel:${h(normalizePhone(c.prefix, c.phone))}" aria-label="Llamar a ${h(c.name)}">${icon("phone")}</a></div>`).join("")}</section><section class="card"><div class="section-title">${icon("shield")}<h2>Seguro de salud</h2></div>${p.insurance.company ? `<h3>${h(p.insurance.company)}</h3><p>${h(p.insurance.plan || "Plan no proporcionado")}</p>${owner && p.insurance.member ? `<p class="private">Afiliación · ${h(p.insurance.member)}</p>` : ""}${p.insurance.phone ? `<a class="text-link" href="tel:${h(p.insurance.phone.replace(/[\s()-]/g, ""))}">${icon("phone")} Llamar a asistencia</a>` : ""}` : '<p class="muted">No proporcionado</p>'}</section><section class="card"><h2>Información adicional</h2>${
+    )}</section><section class="card"><div class="section-title">${icon("phone")}<h2>Contactos de emergencia</h2></div>${p.contacts.map((c, i) => `<div class="contact"><div><small>${h(c.relation)} · ${i === 0 ? "Principal" : "Alternativo"}</small><h3>${h(c.name)}</h3><a class="number" href="tel:${h(normalizePhone(c.prefix, c.phone))}">${h(normalizePhone(c.prefix, c.phone))}</a></div><a class="call" href="tel:${h(normalizePhone(c.prefix, c.phone))}" aria-label="Llamar a ${h(c.name)}">${icon("phone")}</a></div>`).join("")}</section><section class="card"><div class="section-title">${icon("shield")}<h2>Seguro de salud</h2></div>${insuranceContent(p, owner)}</section><section class="card"><h2>Información adicional</h2>${
     [
       ["Instrucciones para emergencias", p.notes],
       ["Información complementaria", p.extra],
