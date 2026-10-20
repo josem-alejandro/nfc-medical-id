@@ -1,4 +1,4 @@
-# Verificación de TAPEC
+# Verificación de NFC Medical ID
 
 Fecha: 20 de octubre de 2026.
 

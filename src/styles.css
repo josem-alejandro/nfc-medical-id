@@ -1155,3 +1155,50 @@ main {
 .review .profile-grid > .card {
   margin-bottom: 14px;
 }
+
+.app-title {
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: -0.3px;
+}
+.profile-toolbar {
+  justify-content: flex-end;
+}
+.emergency-bar {
+  background: transparent;
+  padding: 0;
+  display: block;
+}
+.emergency {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.identity {
+  padding-top: 22px;
+}
+.identity h1 {
+  margin-top: 0;
+}
+@media (max-width: 760px) {
+  .header {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .app-title {
+    font-size: 13px;
+  }
+  .demo-pill {
+    font-size: 10px;
+    padding: 7px 9px;
+  }
+  .steps-panel ol {
+    margin-top: 0;
+  }
+  .registration {
+    padding-top: 12px;
+  }
+  .profile-page {
+    padding-top: 12px;
+  }
+}

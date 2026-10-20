@@ -1,5 +1,4 @@
 export const config = Object.freeze({
-  brand: "TAPEC",
   emergencyNumber: "911",
   defaultPrefix: "+593",
   storageKey: "tapec.demo.v1",

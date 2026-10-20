@@ -1,4 +1,4 @@
-# TAPEC · NFC Medical ID
+# NFC Medical ID
 
 Demostración funcional de identificación médica mediante una URL NFC. Interfaz en español, móvil primero, con registro en cinco etapas, ficha de emergencia, edición, guardado local de progreso y enlaces telefónicos reales. No contiene datos médicos reales.
 
@@ -19,7 +19,7 @@ Abrir http://127.0.0.1:5173. El servidor es solo para desarrollo; publicar `dist
 
 Se eligen módulos JavaScript ES nativos y CSS moderno: esta demo estática no necesita un framework ni dependencias de producción. Mantiene componentes y límites separados sin coste de descarga adicional. Si se integra un backend, se puede migrar la capa de interfaz a React/TypeScript manteniendo el contrato del repositorio.
 
-- `src/config.js`: marca, número de emergencias, pasos e identificador ficticio.
+- `src/config.js`: número de emergencias, pasos e identificador ficticio.
 - `src/model.js`: modelos mediante fábricas, validaciones, edad, teléfonos, proyección pública y escape de HTML.
 - `src/storage.js`: adaptador `DemoRepository`, sustituible por una API autenticada.
 - `src/ui.js`: campos, iconos y representación de la ficha.
@@ -30,7 +30,7 @@ Se eligen módulos JavaScript ES nativos y CSS moderno: esta demo estática no n
 
 ## Rutas
 
-- `#/`: inicio.
+- `#/`: registro directo o ficha confirmada de este navegador.
 - `#/registro`: registro o borrador.
 - `#/perfil/7d83b3c0-2a54-468c-9f21-03ce714fd028`: demostración ficticia disponible en cualquier dispositivo.
 - `#/perfil/<UUID>`: ficha de prueba guardada en este navegador.
