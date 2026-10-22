@@ -678,3 +678,18 @@ select:focus {
     transition: none !important;
   }
 }
+.age-inline {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 23px;
+  line-height: 1.5;
+  font-weight: 450;
+  color: #737377;
+  letter-spacing: -0.5px;
+}
+@media (max-width: 760px) {
+  .age-inline {
+    font-size: 21px;
+    letter-spacing: -0.4px;
+  }
+}

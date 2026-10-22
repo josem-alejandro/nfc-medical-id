@@ -122,3 +122,27 @@ export function escapeHtml(value) {
       ],
   );
 }
+
+// Derived on every render; never stored, so it stays current after birthdays.
+export function calculateAge(birthDate, now = new Date()) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate || "")) return null;
+  const [year, month, day] = birthDate.split("-").map(Number);
+  const birth = new Date(year, month - 1, day);
+  if (
+    birth.getFullYear() !== year ||
+    birth.getMonth() !== month - 1 ||
+    birth.getDate() !== day
+  )
+    return null;
+  let years = now.getFullYear() - year;
+  if (
+    now.getMonth() < month - 1 ||
+    (now.getMonth() === month - 1 && now.getDate() < day)
+  )
+    years--;
+  return years >= 0 && years <= 120 ? years : null;
+}
+export function ageDescription(birthDate, now = new Date()) {
+  const years = calculateAge(birthDate, now);
+  return years === null ? "" : `${years} ${years === 1 ? "año" : "años"}`;
+}

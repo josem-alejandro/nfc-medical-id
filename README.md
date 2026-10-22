@@ -10,7 +10,7 @@ Las URL ya grabadas en etiquetas NFC siguen apuntando al mismo repositorio y alo
 
 Solo nombre, apellido, fecha de nacimiento, grupo sanguíneo, Código Banner de ocho dígitos y un teléfono de emergencia. El número utiliza +593 por defecto y acepta números internacionales completos. El permiso de tratamiento ofrece «Acepto» y «No acepto», sin elección preseleccionada; únicamente Acepto permite guardar y abrir la ficha.
 
-La ficha presenta esos seis datos y un enlace `tel:` al contacto. No se solicitan ni se muestran sexo, enfermedades, alergias, medicamentos, dispositivos, seguros, múltiples contactos, notas, idioma ni edad calculada. El Código Banner se muestra en la ficha; no debe interpretarse como un dato privado oculto a los visitantes de esa vista.
+La ficha muestra el nombre y la edad calculada automáticamente a partir de la fecha de nacimiento; debajo presenta la fecha, grupo sanguíneo, Banner y teléfono. No se añade un campo de edad manual ni se almacena una edad que pueda quedar desactualizada. Presenta esos seis datos y un enlace `tel:` al contacto. No se solicitan ni se muestran sexo, enfermedades, alergias, medicamentos, dispositivos, seguros, múltiples contactos, notas ni idioma. El Código Banner se muestra en la ficha; no debe interpretarse como un dato privado oculto a los visitantes de esa vista.
 
 ## Desarrollo
 

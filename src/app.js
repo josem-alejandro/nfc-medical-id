@@ -5,6 +5,7 @@ import {
   cleanProfile,
   validate,
   validateConsent,
+  ageDescription,
   escapeHtml as h,
 } from "./model.js";
 import { DemoRepository } from "./storage.js";
@@ -99,6 +100,13 @@ function bind() {
         ].includes(input.name)
       ) {
         draft[input.name] = input.value;
+        if (input.name === "birthDate") {
+          const preview = document.getElementById("birthDate-hint");
+          if (preview)
+            preview.textContent =
+              ageDescription(input.value) ||
+              "La edad se calcula automáticamente.";
+        }
       }
     });
     form.addEventListener("focusout", (event) => {

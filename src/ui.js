@@ -1,4 +1,4 @@
-import { escapeHtml as h, normalizePhone } from "./model.js";
+import { escapeHtml as h, normalizePhone, ageDescription } from "./model.js";
 export function icon(name) {
   const paths = {
     phone:
@@ -25,7 +25,8 @@ export function field(label, name, value = "", options = {}) {
 export function bloodField(value, options, error = "") {
   return `<div class="field"><label for="blood">Grupo sanguíneo</label><select id="blood" name="blood" aria-describedby="blood-error" ${error ? 'aria-invalid="true"' : ""}>${options.map((v) => `<option ${v === value ? "selected" : ""}>${h(v)}</option>`).join("")}</select><span class="error" id="blood-error">${h(error)}</span></div>`;
 }
-export function profileContent(p) {
+export function profileContent(p, now = new Date()) {
+  const age = ageDescription(p.birthDate, now);
   const birth = p.birthDate
     ? new Date(p.birthDate + "T12:00:00").toLocaleDateString("es-EC", {
         day: "numeric",
@@ -33,5 +34,5 @@ export function profileContent(p) {
         year: "numeric",
       })
     : "No proporcionada";
-  return `<div class="identity"><div class="eyebrow">IDENTIFICACIÓN</div><h1>${h(p.firstName)}<br>${h(p.lastName)}</h1></div><section class="card profile-details"><dl><div><dt>Fecha de nacimiento</dt><dd>${h(birth)}</dd></div><div><dt>Grupo sanguíneo</dt><dd>${h(p.blood)}</dd></div><div><dt>Código Banner</dt><dd class="digits">${h(p.banner) || "No proporcionado"}</dd></div></dl></section><section class="card emergency-contact"><div><h2>Teléfono de emergencia</h2><a class="number" href="tel:${h(normalizePhone(p.emergencyPhone))}">${h(normalizePhone(p.emergencyPhone))}</a></div><a class="primary" href="tel:${h(normalizePhone(p.emergencyPhone))}" aria-label="Llamar al teléfono de emergencia">${icon("phone")} Llamar</a></section>`;
+  return `<div class="identity"><div class="eyebrow">IDENTIFICACIÓN</div><h1><span class="identity-name">${h(p.firstName)} ${h(p.lastName)}</span>${age ? `<span class="age-inline"> · ${h(age)}</span>` : ""}</h1></div><section class="card profile-details"><dl><div><dt>Fecha de nacimiento</dt><dd>${h(birth)}</dd></div><div><dt>Grupo sanguíneo</dt><dd>${h(p.blood)}</dd></div><div><dt>Código Banner</dt><dd class="digits">${h(p.banner) || "No proporcionado"}</dd></div></dl></section><section class="card emergency-contact"><div><h2>Teléfono de emergencia</h2><a class="number" href="tel:${h(normalizePhone(p.emergencyPhone))}">${h(normalizePhone(p.emergencyPhone))}</a></div><a class="primary" href="tel:${h(normalizePhone(p.emergencyPhone))}" aria-label="Llamar al teléfono de emergencia">${icon("phone")} Llamar</a></section>`;
 }

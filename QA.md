@@ -11,3 +11,5 @@ La revisión de navegador debe comprobar formulario único, bloqueo al no acepta
 No se realizan llamadas de prueba. Las pruebas del navegador integrado no equivalen a una certificación de Safari en un iPhone físico. No se ha integrado una base de datos, autenticación ni programación de etiquetas NFC.
 
 El permiso obligatorio mantiene Generar ficha desactivado inicialmente y al seleccionar No acepto. Se comprobó la advertencia en pantalla a 390 píxeles y la habilitación al elegir Acepto.
+
+Se añadió edad automática junto al nombre, con actualización inmediata al seleccionar la fecha en el formulario. Las pruebas cubren antes, durante y después del cumpleaños, año singular, recién nacidos y fechas inválidas. No se almacena un campo de edad adicional.

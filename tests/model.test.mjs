@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { config } from "../src/config.js";
 import {
+  calculateAge,
+  ageDescription,
   emptyProfile,
   demoProfile,
   cleanProfile,
@@ -169,4 +171,30 @@ test("rechazo presenta advertencia y el permiso se marca obligatorio", () => {
     ),
   );
   assert.ok(html.includes('role="alert"'));
+});
+
+test("edad antes, durante y después del cumpleaños", () => {
+  assert.equal(calculateAge("2012-10-22", new Date(2026, 9, 21)), 13);
+  assert.equal(calculateAge("2012-10-22", new Date(2026, 9, 22)), 14);
+  assert.equal(calculateAge("2012-10-22", new Date(2026, 9, 23)), 14);
+  assert.equal(calculateAge("2012-12-22", new Date(2026, 9, 22)), 13);
+});
+test("edad valida fechas, recién nacidos y año singular", () => {
+  assert.equal(calculateAge("2026-10-22", new Date(2026, 9, 22)), 0);
+  assert.equal(ageDescription("2025-10-22", new Date(2026, 9, 22)), "1 año");
+  for (const value of ["", "2001-02-29", "2027-01-01"])
+    assert.equal(calculateAge(value, new Date(2026, 9, 22)), null);
+  assert.equal(calculateAge("2000-02-29", new Date(2026, 1, 28)), 25);
+  assert.equal(calculateAge("2000-02-29", new Date(2026, 2, 1)), 26);
+});
+test("ficha muestra nombre y edad derivada sin añadir otro campo almacenado", () => {
+  const p = demoProfile();
+  p.firstName = "Persona";
+  p.lastName = "Ficticia";
+  p.birthDate = "2012-10-22";
+  const html = profileContent(p, new Date(2026, 9, 22));
+  assert.ok(html.includes("Persona Ficticia"));
+  assert.ok(html.includes("14 años"));
+  assert.ok(html.indexOf("14 años") < html.indexOf("Fecha de nacimiento"));
+  assert.ok(!("age" in cleanProfile({ ...p, age: 999 })));
 });
