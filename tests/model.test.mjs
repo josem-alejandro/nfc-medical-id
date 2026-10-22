@@ -1,77 +1,148 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { config } from "../src/config.js";
 import {
   emptyProfile,
   demoProfile,
-  age,
+  cleanProfile,
   normalizePhone,
   validate,
-  publicProfile,
-  escapeHtml,
   validateConsent,
+  escapeHtml,
 } from "../src/model.js";
 import { DemoRepository } from "../src/storage.js";
-test("edad antes, durante y después del cumpleaños", () => {
-  assert.equal(age("1992-04-18", new Date(2026, 3, 17)), 33);
-  assert.equal(age("1992-04-18", new Date(2026, 3, 18)), 34);
-  assert.equal(age("1992-04-18", new Date(2026, 3, 19)), 34);
+import { registrationFields } from "../src/forms.js";
+import { profileContent } from "../src/ui.js";
+import { consentMarkup, privacyPage } from "../src/privacy.js";
+test("los seis campos permiten generar una ficha válida", () => {
+  assert.deepEqual(validate(demoProfile()), {});
+  assert.equal(Object.keys(validate(emptyProfile())).length, 5);
 });
-test("identificadores aleatorios y estados médicos explícitos", () => {
-  let p = emptyProfile();
-  assert.notEqual(p.id, emptyProfile().id);
-  assert.ok(Object.values(p.medical).every((v) => v.status === "unknown"));
+test("Banner conserva ceros iniciales y exige ocho dígitos", () => {
+  const p = demoProfile();
+  for (const value of ["", "1234567", "123456789", "abcdefgh"]) {
+    p.banner = value;
+    assert.ok(validate(p).banner);
+  }
+  p.banner = "00123456";
+  assert.ok(!validate(p).banner);
 });
-test("no permite identificación incompleta ni fechas futuras", () => {
-  assert.equal(Object.keys(validate(emptyProfile(), 0)).length, 4);
-  let p = demoProfile();
-  p.birthDate = "2999-01-01";
-  assert.ok(validate(p, 0).birthDate);
+test("fecha inválida, futura o imposible no se acepta", () => {
+  const p = demoProfile();
+  for (const value of ["", "2999-01-01", "2001-02-29", "2026-02-31"]) {
+    p.birthDate = value;
+    assert.ok(validate(p).birthDate);
+  }
+  p.birthDate = "2000-02-29";
+  assert.ok(!validate(p).birthDate);
 });
-test("números ecuatorianos normalizados y prefijos internacionales", () => {
-  assert.equal(normalizePhone("+593", "099 123 4567"), "+593991234567");
-  assert.equal(normalizePhone("+1", "202-555-0146"), "+12025550146");
-  let p = demoProfile();
-  p.contacts[0].phone = "abc";
-  assert.ok(validate(p, 2)["contact-0-phone"]);
+test("Ecuador se añade por defecto y teléfonos internacionales no se duplican", () => {
+  assert.equal(normalizePhone("099 123 4567"), "+593991234567");
+  assert.equal(normalizePhone("+1 (202) 555-0146"), "+12025550146");
+  const p = demoProfile();
+  p.emergencyPhone = "abc";
+  assert.ok(validate(p).emergencyPhone);
 });
-test("rechaza estado agregar información sin registros", () => {
-  let p = demoProfile();
-  p.medical.allergies.items = [" "];
-  assert.ok(validate(p, 1).allergies);
-  p.medical.allergies.status = "none";
-  assert.ok(!validate(p, 1).allergies);
+test("aceptación exige elección afirmativa y versión vigente", () => {
+  const p = demoProfile();
+  assert.equal(validateConsent(p), false);
+  p.consentChoice = "decline";
+  p.consentVersion = config.privacyVersion;
+  assert.equal(validateConsent(p), false);
+  p.consentChoice = "accept";
+  assert.equal(validateConsent(p), true);
+  p.consentVersion = "old";
+  assert.equal(validateConsent(p), false);
 });
-test("seguro opcional y teléfono internacional", () => {
-  assert.deepEqual(validate(emptyProfile(), 3), {});
-  let p = emptyProfile();
-  p.insurance.plan = "Plan";
-  assert.deepEqual(validate(p, 3), {});
-  p.insurance.phone = "0999";
-  assert.ok(validate(p, 3).insurancePhone);
+test("formulario contiene exactamente los seis datos y no hay campos retirados", () => {
+  const html = registrationFields(emptyProfile());
+  assert.deepEqual(
+    [...html.matchAll(/name="([^"]+)"/g)].map((m) => m[1]),
+    ["firstName", "lastName", "birthDate", "blood", "banner", "emergencyPhone"],
+  );
+  const consent = consentMarkup();
+  assert.ok(!consent.includes("checked"));
+  assert.ok(consent.includes("No acepto"));
+  assert.ok(consent.includes("#/privacidad"));
 });
-test("consulta excluye datos privados del titular", () => {
-  let p = demoProfile();
-  let view = publicProfile(p);
-  assert.ok(!("member" in view.insurance));
-  assert.ok(!("band" in view));
-  assert.ok(!("consent" in view));
+test("ficha muestra Banner, teléfono correcto y no conserva secciones retiradas", () => {
+  const p = demoProfile();
+  const html = profileContent(p);
+  assert.ok(html.includes("00000000"));
+  assert.ok(html.includes(`tel:${normalizePhone(p.emergencyPhone)}`));
+  for (const label of [
+    "Alergias",
+    "Medicamentos",
+    "Seguro de salud",
+    "Información adicional",
+    "911",
+  ])
+    assert.ok(!html.includes(label));
 });
-test("guardado, edición y recuperación de borrador", () => {
-  let value = null;
-  let repo = new DemoRepository({
-    getItem: () => value,
-    setItem: (_, v) => (value = v),
+test("migración mantiene identificador y datos permitidos, retira los demás", () => {
+  const p = demoProfile();
+  const old = {
+    ...p,
+    emergencyPhone: undefined,
+    contacts: [
+      {
+        name: "No debe persistir",
+        relation: "Amigo",
+        prefix: "+593",
+        phone: "0991234567",
+      },
+    ],
+    medical: { allergies: "No debe persistir" },
+    insurance: { member: "No debe persistir" },
+    notes: "No debe persistir",
+    sex: "No debe persistir",
+  };
+  const clean = cleanProfile(old);
+  assert.equal(clean.id, p.id);
+  assert.equal(clean.emergencyPhone, "+593991234567");
+  for (const key of ["contacts", "medical", "insurance", "notes", "sex"])
+    assert.ok(!(key in clean));
+});
+test("repositorio migra versión anterior sin romper la URL y purga campos retirados", () => {
+  const p = demoProfile();
+  let stored = JSON.stringify({
+    version: 1,
+    profile: {
+      ...p,
+      medical: { allergies: ["RETIRADO"] },
+      insurance: { member: "RETIRADO" },
+      contacts: [],
+    },
+    publishedProfile: { ...p, notes: "RETIRADO" },
+    step: 4,
+    furthestStep: 4,
   });
-  let p = demoProfile();
-  assert.equal(repo.save(p, 3, true), true);
-  assert.equal(repo.read().profile.firstName, "Elena");
-  p.firstName = "Lucía";
-  repo.save(p, 4, true);
-  assert.equal(repo.read().profile.firstName, "Lucía");
-  assert.equal(repo.read().step, 4);
+  const repo = new DemoRepository({
+    getItem: () => stored,
+    setItem: (_, value) => (stored = value),
+  });
+  const result = repo.read();
+  assert.equal(result.version, 2);
+  assert.equal(result.publishedProfile.id, p.id);
+  assert.ok(!stored.includes("RETIRADO"));
+  assert.ok(!stored.includes("furthestStep"));
 });
-test("fallos de almacenamiento y contenido corrupto", () => {
-  let repo = new DemoRepository({
+test("guardado y edición conservan exclusivamente los datos solicitados", () => {
+  let stored = null;
+  const repo = new DemoRepository({
+    getItem: () => stored,
+    setItem: (_, value) => (stored = value),
+  });
+  const p = demoProfile();
+  assert.equal(repo.save(p), true);
+  p.firstName = "Nombre modificado";
+  p.notes = "RETIRADO";
+  repo.save(p);
+  assert.equal(repo.read().publishedProfile.firstName, "Nombre modificado");
+  assert.ok(!stored.includes("RETIRADO"));
+});
+test("fallos de almacenamiento no producen excepciones", () => {
+  const repo = new DemoRepository({
     getItem: () => "{broken",
     setItem: () => {
       throw Error();
@@ -80,107 +151,22 @@ test("fallos de almacenamiento y contenido corrupto", () => {
   assert.equal(repo.read(), null);
   assert.equal(repo.save(demoProfile()), false);
 });
-test("escapa texto introducido para impedir HTML ejecutable", () => {
-  assert.equal(
-    escapeHtml('<img onerror="x">'),
-    "&lt;img onerror=&quot;x&quot;&gt;",
-  );
-});
-
-test("borradores de edición no sustituyen la ficha confirmada", () => {
-  let value = null;
-  let repo = new DemoRepository({
-    getItem: () => value,
-    setItem: (_, v) => (value = v),
-  });
-  let p = demoProfile();
-  repo.save(p, 0, true);
-  p.firstName = "Borrador";
-  repo.save(p, 1, false);
-  assert.equal(repo.read().profile.firstName, "Borrador");
-  assert.equal(repo.read().publishedProfile.firstName, "Elena");
-  repo.save(p, 4, true);
-  assert.equal(repo.read().publishedProfile.firstName, "Borrador");
-});
-
-import { stage } from "../src/forms.js";
-import { profileContent, insuranceContent } from "../src/ui.js";
-test("las cinco etapas se renderizan sin referencias ausentes", () => {
-  let p = demoProfile();
-  for (let i = 0; i < 5; i++) assert.ok(stage(i, p, {}).length > 0);
-});
-test("la ficha renderizada contiene llamadas y excluye afiliación en consulta", () => {
-  let p = demoProfile();
-  let html = profileContent(publicProfile(p));
-  assert.ok(html.includes('href="tel:'));
-  assert.ok(!html.includes("DEMO-001"));
-  assert.ok(!html.includes("TAPEC"));
-});
-
-import { config } from "../src/config.js";
-import { privacyPage, consentMarkup } from "../src/privacy.js";
-test("Banner exige ocho dígitos y conserva ceros iniciales", () => {
+test("texto introducido se escapa y aviso describe el esquema reducido", () => {
+  assert.equal(escapeHtml("<script>"), "&lt;script&gt;");
   const p = demoProfile();
-  for (const value of ["", "1234567", "123456789", "abcdefgh"]) {
-    p.banner = value;
-    assert.ok(validate(p, 0).banner);
-  }
-  p.banner = "00123456";
-  assert.deepEqual(validate(p, 0), {});
-  assert.equal(p.banner, "00123456");
-});
-test("se puede pegar un teléfono completo sin duplicar el prefijo", () => {
-  assert.equal(normalizePhone("+593", "+593 99 123 4567"), "+593991234567");
-  assert.equal(normalizePhone(undefined, "0991234567"), "+593991234567");
-});
-test("seguro admite cada dato de forma independiente y teléfono local", () => {
-  for (const key of ["company", "plan", "member"]) {
-    const p = emptyProfile();
-    p.insurance[key] = "Ejemplo";
-    assert.deepEqual(validate(p, 3), {});
-  }
-  const p = emptyProfile();
-  p.insurance.phone = "0991234567";
-  assert.deepEqual(validate(p, 3), {});
-  assert.ok(insuranceContent(p).includes("tel:+593991234567"));
-});
-test("aceptación requiere acción y versión vigente", () => {
-  const p = emptyProfile();
-  assert.equal(validateConsent(p), false);
-  p.consent = true;
-  assert.equal(validateConsent(p), false);
-  p.consentVersion = config.privacyVersion;
-  assert.equal(validateConsent(p), true);
-  assert.ok(!consentMarkup(false).includes(" checked"));
-  assert.ok(consentMarkup(false).includes("#/privacidad"));
-});
-test("consulta excluye Banner y registro de aceptación", () => {
-  const p = demoProfile();
-  p.consentRecord = { acceptedAt: "ejemplo" };
-  const out = publicProfile(p);
-  assert.ok(!("banner" in out));
-  assert.ok(!("consentRecord" in out));
-});
-test("aviso se identifica como ejemplo y no cambia datos del formulario", () => {
-  const p = demoProfile();
-  const before = JSON.stringify(p);
+  p.firstName = "<script>alert(1)</script>";
+  assert.ok(!profileContent(p).includes("<script>"));
+  assert.ok(privacyPage().includes("seis datos"));
   assert.ok(privacyPage().includes("TAPEC (ejemplo)"));
-  assert.ok(privacyPage().includes("#/registro"));
-  assert.equal(JSON.stringify(p), before);
 });
 
-test("retroceder y recargar conserva los pasos ya visitados y todos los datos", () => {
-  let value = null;
-  const storage = { getItem: () => value, setItem: (_, v) => (value = v) };
-  let repo = new DemoRepository(storage);
-  let p = demoProfile();
-  repo.save(p, 4, false, 4);
-  p.firstName = "Nombre editado";
-  repo.save(p, 0, false, 4);
-  repo = new DemoRepository(storage);
-  assert.equal(repo.read().step, 0);
-  assert.equal(repo.read().furthestStep, 4);
-  assert.equal(repo.read().profile.firstName, "Nombre editado");
-  assert.equal(repo.read().profile.contacts[0].name, p.contacts[0].name);
-  assert.deepEqual(repo.read().profile.medical, p.medical);
+test("rechazo presenta advertencia y el permiso se marca obligatorio", () => {
+  const html = consentMarkup("decline");
+  assert.ok(html.includes("Obligatorio"));
+  assert.ok(
+    html.includes(
+      "Tu ficha no se podrá generar si no aceptas la política de privacidad.",
+    ),
+  );
+  assert.ok(html.includes('role="alert"'));
 });
